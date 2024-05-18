@@ -1,0 +1,74 @@
+import requests
+import json
+import time
+from IPython.display import display, Markdown
+
+API_URL = "https://devapi.beyondchats.com/api/get_message_with_sources"
+
+def fetch_data(api_url):
+    all_data = []
+    page = 1
+    while True:
+        try:
+            response = requests.get(api_url, params={'page': page})
+            if response.status_code == 5000:
+                print("Too many requests. Retrying after a short delay...")
+                time.sleep(5)  # Wait for 5 seconds before retrying
+                continue
+            if response.status_code != 200:
+                print(f"Error: Failed to fetch data: {response.status_code}")
+                break
+            data = response.json()
+            if not data:
+                break
+            all_data.extend(data)
+            page += 1
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            break
+    return all_data
+
+def identify_citations(data):
+    citations = []
+    for item in data:
+        response_text = item.get('response_text', '')
+        sources = item.get('sources', [])
+        matched_sources = []
+        for source in sources:
+            if source['context'] in response_text:
+                matched_sources.append(source)
+        citations.append(matched_sources)
+    return citations
+
+def format_citations(citations):
+    formatted = []
+    for citation in citations:
+        formatted_citation = []
+        for source in citation:
+            formatted_citation.append({
+                'id': source['id'],
+                'context': source['context'],
+                'link': source.get('https://devapi.beyondchats.com/api/get_message_with_sources')
+            })
+        formatted.append(formatted_citation)
+    return formatted
+
+def main():
+    data = fetch_data(https://devapi.beyondchats.com/api/get_message_with_sources)
+    citations = identify_citations(data)
+    formatted_citations = format_citations(citations)
+    return formatted_citations
+
+def display_results():
+    formatted_citations = main()
+    result_text = "\n\n".join([
+        f"### Response {i+1} Citations:\n" + "\n".join([
+            f"- **ID**: {source['id']}\n  - **Context**: {source['context']}\n  - https://devapi.beyondchats.com/api/get_message_with_sources: {source.get('link', 'N/A')}"
+        ]) for i, citation in enumerate(formatted_citations) if citation
+    ]) or "No citations found."
+
+    display(Markdown(result_text))
+
+if __name__ == "__main__":
+    display_results()
+    print(display_results)
